@@ -50,7 +50,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
                 Long tokenPasswordChangedAt = jwtTokenProvider.getPasswordChangedAtFromToken(jwt);
-                Long tokenIssuedAt = jwtTokenProvider.getIssuedAtEpochMilli(jwt);
 
                 User user = userRepository.findById(userId).orElse(null);
 

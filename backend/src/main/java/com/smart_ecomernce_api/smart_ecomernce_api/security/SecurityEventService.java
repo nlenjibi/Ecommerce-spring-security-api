@@ -78,10 +78,7 @@ public class SecurityEventService {
         }
     }
 
-    public void recordAccessDenied(String identifier, String ipAddress, String endpoint, String reason) {
-        log.warn("ACCESS_DENIED: user={}, ip={}, endpoint={}, reason={}, time={}", 
-                identifier, ipAddress, endpoint, reason, LocalDateTime.now());
-    }
+
 
     public void recordTokenRevoked(String identifier, String reason) {
         log.info("TOKEN_REVOKED: user={}, reason={}, time={}", 
@@ -127,13 +124,6 @@ public class SecurityEventService {
                 : 0;
     }
 
-    public boolean isAccountLocked(String identifier) {
-        return getFailedLoginAttempts(identifier) >= maxFailedAttempts;
-    }
-
-    public AccessLogEntry getLastAccess(String identifier) {
-        return accessLog.get(identifier.toLowerCase());
-    }
 
     public void clearExpiredAttempts() {
         failedLoginAttempts.cleanUp();

@@ -86,17 +86,6 @@ public class TokenBlacklistService {
         return userTokenVersion.getIfPresent(userKey);
     }
 
-    public void removeFromBlacklist(String token) {
-        String tokenKey = hashToken(token);
-        tokenBlacklist.invalidate(tokenKey);
-        tokenExpiryCache.invalidate(tokenKey);
-        log.debug("Token removed from blacklist: {}", tokenKey.substring(0, 8) + "...");
-    }
-
-    public long getBlacklistedTokenCount() {
-        return tokenBlacklist.estimatedSize();
-    }
-
     public void clearExpiredTokens() {
         tokenBlacklist.cleanUp();
         tokenExpiryCache.cleanUp();

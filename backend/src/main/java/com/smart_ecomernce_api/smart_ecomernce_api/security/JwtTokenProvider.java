@@ -40,34 +40,9 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTokenExpiration);
 
-        return Jwts.builder()
-                .subject(user.getId().toString())
-                .claim("email", user.getEmail())
-                .claim("username", user.getUsername())
-                .claim("role", user.getRole().name())
-                .claim("passwordChangedAt", user.getLastPasswordChange() != null 
-                    ? user.getLastPasswordChange().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() 
-                    : null)
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(getSigningKey(), Jwts.SIG.HS512)
-                .compact();
+        return Jwts.builder().subject(user.getId().toString()).claim("email", user.getEmail()).claim("username", user.getUsername()).claim("role", user.getRole().name()).claim("passwordChangedAt", user.getLastPasswordChange() != null ? user.getLastPasswordChange().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : null).issuedAt(now).expiration(expiryDate).signWith(getSigningKey(), Jwts.SIG.HS512).compact();
     }
 
-    /**
-     * Generate refresh token for user
-     */
-    public String generateRefreshToken(User user) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + refreshTokenExpiration);
-
-        return Jwts.builder()
-                .subject(user.getId().toString())
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(getSigningKey(), Jwts.SIG.HS512)
-                .compact();
-    }
 
     /**
      * Get user ID from JWT token
@@ -77,21 +52,6 @@ public class JwtTokenProvider {
         return Long.parseLong(claims.getSubject());
     }
 
-    /**
-     * Get username from JWT token
-     */
-    public String getUsernameFromToken(String token) {
-        Claims claims = getClaims(token);
-        return claims.get("username", String.class);
-    }
-
-    /**
-     * Get email from JWT token
-     */
-    public String getEmailFromToken(String token) {
-        Claims claims = getClaims(token);
-        return claims.get("email", String.class);
-    }
 
     /**
      * Get role from JWT token
@@ -106,25 +66,11 @@ public class JwtTokenProvider {
         return claims.get("passwordChangedAt", Long.class);
     }
 
-    public Long getUserTokenVersionFromToken(String token) {
-        Claims claims = getClaims(token);
-        return claims.get("userTokenVersion", Long.class);
-    }
-
-    public Long getIssuedAtEpochMilli(String token) {
-        Claims claims = getClaims(token);
-        return claims.getIssuedAt().getTime();
-    }
-
     /**
      * Get claims from token
      */
     private Claims getClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
     }
 
     /**
@@ -132,10 +78,7 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token);
+            Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token);
             return true;
         } catch (SignatureException ex) {
             log.error("Invalid JWT signature: {}", ex.getMessage());
@@ -159,26 +102,8 @@ public class JwtTokenProvider {
         return claims.getExpiration();
     }
 
-    /**
-     * Get issued at date from token
-     */
-    public Date getIssuedAtDateFromToken(String token) {
-        Claims claims = getClaims(token);
-        return claims.getIssuedAt();
-    }
 
-    /**
-     * Check if token is expired
-     */
-    public boolean isTokenExpired(String token) {
-        try {
-            Date expiration = getExpirationDateFromToken(token);
-            return expiration.before(new Date());
-        } catch (Exception e) {
-            log.error("Error checking token expiration: {}", e.getMessage());
-            return true;
-        }
-    }
+
 
     /**
      * Get remaining time until token expires (in milliseconds)
@@ -193,28 +118,4 @@ public class JwtTokenProvider {
         }
     }
 
-    /**
-     * Check if token can be refreshed (not expired for more than X time)
-     */
-    public boolean canTokenBeRefreshed(String token) {
-        try {
-            return !isTokenExpired(token);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /**
-     * Get access token expiration in seconds
-     */
-    public Long getAccessTokenExpirationInSeconds() {
-        return accessTokenExpiration / 1000;
-    }
-
-    /**
-     * Get refresh token expiration in seconds
-     */
-    public Long getRefreshTokenExpirationInSeconds() {
-        return refreshTokenExpiration / 1000;
-    }
 }
